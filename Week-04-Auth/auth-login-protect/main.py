@@ -71,6 +71,8 @@ from typing import Optional
 def public_info():
     return {"message": "Welcome stranger! This info is public."}
 
+
+
 @app.get("/protected/profile")
 def protected_profile(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -80,4 +82,13 @@ def protected_profile(authorization: Optional[str] = Header(None)):
     if not token:
         raise HTTPException(status_code=401, detail="Access token required")
 
-    return {"message": "Token present, not yet verified"} 
+    try:
+        user_response = supabase.auth.get_user(token)
+        user = user_response.user
+        return {
+            "id": user.id,
+            "email": user.email,
+            "created_at": user.created_at
+        }
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
