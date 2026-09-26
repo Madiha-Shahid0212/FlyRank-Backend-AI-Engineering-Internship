@@ -1,3 +1,6 @@
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security_scheme = HTTPBearer()
 import os
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
@@ -73,11 +76,8 @@ def public_info():
 
 
 
-def verify_token(authorization: Optional[str] = Header(None)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Access token required")
-
-    token = authorization.split("Bearer ")[1]
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security_scheme)):
+    token = credentials.credentials
     if not token:
         raise HTTPException(status_code=401, detail="Access token required")
 
