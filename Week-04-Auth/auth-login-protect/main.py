@@ -73,8 +73,7 @@ def public_info():
 
 
 
-@app.get("/protected/profile")
-def protected_profile(authorization: Optional[str] = Header(None)):
+def verify_token(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Access token required")
 
@@ -84,11 +83,28 @@ def protected_profile(authorization: Optional[str] = Header(None)):
 
     try:
         user_response = supabase.auth.get_user(token)
-        user = user_response.user
-        return {
-            "id": user.id,
-            "email": user.email,
-            "created_at": user.created_at
-        }
+        return {"user": user_response.user, "token": token}
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+@app.get("/protected/profile")
+def protected_profile(auth_data: dict = Depends(verify_token)):
+    user = auth_data["user"]
+    return {
+        "id": user.id,
+        "email": user.email,
+        "created_at": user.created_at
+    }
+
+@app.get("/protected/dashboard")
+def protected_dashboard(auth_data: dict = Depends(verify_token)):
+    user = auth_data["user"]
+    return {"message": f"Welcome to your dashboard, {user.email}!"}
+
+@app.post("/auth/logout", status_code=204)
+def logout(auth_data: dict = Depends(verify_token)):
+    try:
+        supabase.auth.sign_out()
+        return
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
