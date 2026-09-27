@@ -108,7 +108,7 @@ This is wired into FastAPI's Swagger UI using the `HTTPBearer` security scheme, 
 
 Visit `http://127.0.0.1:8000/docs`. Protected routes are marked with a lock icon. Click **Authorize**, paste your access token (without the `Bearer` prefix), and use **Try it out** to test protected endpoints directly from the browser.
 
-![Swagger UI screenshot](swagger-screenshot.png)
+![Swagger UI screenshot](screenshot.png)
 
 ## Security notes
 
